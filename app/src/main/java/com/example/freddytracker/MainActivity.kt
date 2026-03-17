@@ -20,7 +20,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             FreddyTrackerTheme {
-                Previewcita()
+                NavGraph()
             }
         }
     }
@@ -28,7 +28,7 @@ class MainActivity : ComponentActivity() {
 
 @Preview(showBackground = true)
 @Composable
-fun Previewcita() {
+fun NavGraphPreview() {
     FreddyTrackerTheme {
         NavGraph()
     }
