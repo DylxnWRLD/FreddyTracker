@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.freddytracker.datos.EstadoTarea
 import com.example.freddytracker.viewModel.TareaViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -82,13 +83,22 @@ fun EditarTarea(
 
         Button(
             onClick = {
+                var tiempoFinal = task.tiempoAcumulado
+                var estadoFinal = task.estado
+
+                if (task.estado == EstadoTarea.EN_PROGRESO && endTime.isNotEmpty()) {
+                    val ahora = System.currentTimeMillis()
+                    tiempoFinal += (ahora - task.ultimoInicio)
+                    estadoFinal = EstadoTarea.FINALIZADO
+                }
+
                 val updatedTask = task.copy(
                     name = name,
                     startTime = startTime,
                     endTime = if (endTime.isEmpty()) null else endTime,
-                    status = if (endTime.isEmpty()) "En progreso" else "Finalizada"
+                    estado = estadoFinal,
+                    tiempoAcumulado = tiempoFinal
                 )
-
                 viewModel.updateTask(updatedTask)
                 navController.popBackStack()
             }

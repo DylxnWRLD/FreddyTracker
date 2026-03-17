@@ -2,6 +2,7 @@ package com.example.freddytracker.viewModel
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
+import com.example.freddytracker.datos.EstadoTarea
 import com.example.freddytracker.datos.Tarea
 
 class TareaViewModel : ViewModel() {
@@ -21,6 +22,52 @@ class TareaViewModel : ViewModel() {
         val index = tasks.indexOfFirst { it.id == updatedTask.id }
         if (index != -1) {
             tasks[index] = updatedTask
+        }
+    }
+
+    fun iniciarTarea(tarea: Tarea) {
+        val ahora = System.currentTimeMillis()
+
+        val tareaActualizada = tarea.copy(
+            ultimoInicio = ahora,
+            estado = EstadoTarea.EN_PROGRESO
+        )
+
+        updateTask(tareaActualizada)
+    }
+
+    fun pausarTarea(tarea: Tarea) {
+        if (tarea.estado != EstadoTarea.EN_PROGRESO) return
+
+        val ahora = System.currentTimeMillis()
+        val diferencia = ahora - tarea.ultimoInicio
+
+        val tareaActualizada = tarea.copy(
+            tiempoAcumulado = tarea.tiempoAcumulado + diferencia,
+            estado = EstadoTarea.PAUSADO
+        )
+
+        updateTask(tareaActualizada)
+    }
+
+    fun reanudarTarea(tarea: Tarea) {
+        if (tarea.estado != EstadoTarea.PAUSADO) return
+
+        val ahora = System.currentTimeMillis()
+
+        val tareaActualizada = tarea.copy(
+            ultimoInicio = ahora,
+            estado = EstadoTarea.EN_PROGRESO
+        )
+
+        updateTask(tareaActualizada)
+    }
+    fun obtenerTiempoActual(tarea: Tarea): Long {
+        return if (tarea.estado == EstadoTarea.EN_PROGRESO) {
+            val ahora = System.currentTimeMillis()
+            tarea.tiempoAcumulado + (ahora - tarea.ultimoInicio)
+        } else {
+            tarea.tiempoAcumulado
         }
     }
 

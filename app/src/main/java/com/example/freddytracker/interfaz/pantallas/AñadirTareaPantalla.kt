@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.freddytracker.datos.EstadoTarea
 import com.example.freddytracker.datos.Tarea
 import com.example.freddytracker.viewModel.TareaViewModel
 import java.text.SimpleDateFormat
@@ -49,9 +50,11 @@ fun AñadirTareaPantalla(
                 val task = Tarea(
                     id = viewModel.tasks.size + 1,
                     name = name,
-                    startTime = formattedTime, // Se asigna automáticamente
+                    startTime = formattedTime,
                     endTime = null,
-                    status = "En progreso"
+                    tiempoAcumulado = 0L,
+                    ultimoInicio = 0L,
+                    estado = EstadoTarea.PENDIENTE
                 )
 
                 viewModel.addTask(task)
