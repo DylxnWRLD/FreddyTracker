@@ -1,6 +1,9 @@
 package com.example.freddytracker.interfaz.pantallas
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
@@ -12,19 +15,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.freddytracker.viewModel.TareaViewModel
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
+@SuppressLint("NewApi")
 @Composable
 fun EditarTarea(
     navController: NavController,
     viewModel: TareaViewModel,
     taskId: Int
 ) {
-
     val task = viewModel.tasks.find { it.id == taskId }
 
-    // Si no existe la tarea
     if (task == null) {
         Text("Tarea no encontrada")
         return
@@ -37,8 +43,9 @@ fun EditarTarea(
     Column(
         modifier = Modifier.padding(16.dp)
     ) {
+        Text("Editar tarea", fontSize = 20.sp)
 
-        Text("Editar tarea")
+        Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedTextField(
             value = name,
@@ -52,15 +59,29 @@ fun EditarTarea(
             label = { Text("Hora inicio") }
         )
 
-        OutlinedTextField(
-            value = endTime,
-            onValueChange = { endTime = it },
-            label = { Text("Hora fin") }
-        )
+        // Mostramos el texto de la hora de fin solo si ya ha sido registrada
+        if (endTime.isNotEmpty()) {
+            Text(
+                text = "Hora de fin: $endTime",
+                modifier = Modifier.padding(vertical = 8.dp),
+                fontSize = 16.sp
+            )
+        }
+
+        // Botón para registrar la hora actual como hora de fin
+        Button(
+            onClick = {
+                val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
+                endTime = sdf.format(Date()) // Actualiza el estado con la hora actual
+            }
+        ) {
+            Text("Registrar hora de fin")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         Button(
             onClick = {
-
                 val updatedTask = task.copy(
                     name = name,
                     startTime = startTime,
@@ -69,14 +90,10 @@ fun EditarTarea(
                 )
 
                 viewModel.updateTask(updatedTask)
-
                 navController.popBackStack()
-
             }
         ) {
             Text("Guardar cambios")
         }
-
     }
-
 }
