@@ -10,25 +10,28 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.freddytracker.datos.Tarea
 import com.example.freddytracker.viewModel.TareaViewModel
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
 
 @Composable
 fun AñadirTareaPantalla(
     navController: NavController,
     viewModel: TareaViewModel
 ) {
-
     var name by remember { mutableStateOf("") }
-    var startTime by remember { mutableStateOf("") }
 
     Column(
-        modifier = Modifier.padding(16.dp)
+        modifier = Modifier.padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
         Text("Agregar tarea")
 
         OutlinedTextField(
@@ -37,32 +40,25 @@ fun AñadirTareaPantalla(
             label = { Text("Nombre de tarea") }
         )
 
-        OutlinedTextField(
-            value = startTime,
-            onValueChange = { startTime = it },
-            label = { Text("Hora inicio") }
-        )
 
         Button(
             onClick = {
+                val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
+                val formattedTime = sdf.format(Date())
 
                 val task = Tarea(
                     id = viewModel.tasks.size + 1,
                     name = name,
-                    startTime = startTime,
+                    startTime = formattedTime, // Se asigna automáticamente
                     endTime = null,
                     status = "En progreso"
                 )
 
                 viewModel.addTask(task)
-
                 navController.popBackStack()
-
             }
         ) {
             Text("Guardar")
         }
-
     }
-
 }
