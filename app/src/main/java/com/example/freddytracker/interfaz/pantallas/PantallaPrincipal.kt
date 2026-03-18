@@ -112,30 +112,60 @@ fun PantallaPrincipal(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 // Botones de control de estado con ICONOS
-                                when (task.estado) {
-                                    EstadoTarea.PENDIENTE, EstadoTarea.PAUSADO -> {
-                                        FilledIconButton(
-                                            onClick = {
-                                                if (task.estado == EstadoTarea.PENDIENTE) viewModel.iniciarTarea(task)
-                                                else viewModel.reanudarTarea(task)
-                                            },
-                                            colors = IconButtonDefaults.filledIconButtonColors(containerColor = Color(0xFF75de5d))
-                                        ) {
-                                            Icon(Icons.Filled.PlayArrow, contentDescription = "Iniciar", tint = Color.Black)
-                                        }
-                                    }
-                                    EstadoTarea.EN_PROGRESO -> {
-                                        FilledIconButton(
-                                            onClick = { viewModel.pausarTarea(task) },
-                                            colors = IconButtonDefaults.filledIconButtonColors(containerColor = Color(0xFFf2a435))
-                                        ) {
-                                            Icon(Icons.Filled.Pause, contentDescription = "Pausar", tint = Color.Black)
-                                        }
-                                    }
-                                    else -> {}
-                                }
+                                // Verificamos si la tarea ya está cerrada definitivamente
+                                val estaFinalizada = task.estado == EstadoTarea.FINALIZADO || !task.endTime.isNullOrEmpty()
 
-                                Spacer(modifier = Modifier.width(8.dp))
+                                if (!estaFinalizada) {
+                                    when (task.estado) {
+                                        EstadoTarea.PENDIENTE, EstadoTarea.PAUSADO -> {
+                                            FilledIconButton(
+                                                onClick = {
+                                                    if (task.estado == EstadoTarea.PENDIENTE) viewModel.iniciarTarea(task)
+                                                    else viewModel.reanudarTarea(task)
+                                                },
+                                                colors = IconButtonDefaults.filledIconButtonColors(containerColor = Color(0xFF75de5d))
+                                            ) {
+                                                Icon(Icons.Filled.PlayArrow, contentDescription = "Iniciar", tint = Color.Black)
+                                            }
+                                        }
+                                        EstadoTarea.EN_PROGRESO -> {
+                                            FilledIconButton(
+                                                onClick = { viewModel.pausarTarea(task) },
+                                                colors = IconButtonDefaults.filledIconButtonColors(containerColor = Color(0xFFf2a435))
+                                            ) {
+                                                Icon(Icons.Filled.Pause, contentDescription = "Pausar", tint = Color.Black)
+                                            }
+                                        }
+                                        else -> {}
+                                    }
+
+                                    Spacer(modifier = Modifier.width(8.dp))
+
+                                    FilledIconButton(
+                                        onClick = {
+                                            val ahora = System.currentTimeMillis()
+                                            val sdf = java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault())
+                                            val horaFin = sdf.format(java.util.Date(ahora))
+
+                                            val tiempoFinal = if (task.estado == EstadoTarea.EN_PROGRESO) {
+                                                task.tiempoAcumulado + (ahora - task.ultimoInicio)
+                                            } else {
+                                                task.tiempoAcumulado
+                                            }
+
+                                            viewModel.updateTask(task.copy(
+                                                estado = EstadoTarea.FINALIZADO,
+                                                endTime = horaFin,
+                                                tiempoAcumulado = tiempoFinal
+                                            ))
+                                        },
+                                        colors = IconButtonDefaults.filledIconButtonColors(containerColor = Color.Gray)
+                                    ) {
+                                        Icon(Icons.Filled.Stop, contentDescription = "Finalizar", tint = Color.White)
+                                    }
+
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                }
 
                                 FilledIconButton(
                                     onClick = { navController.navigate("editTask/${task.id}") },
@@ -174,14 +204,24 @@ fun PantallaPrincipal(
                 onDismissRequest = { tareaAEliminar = null },
                 title = { Text("Alerta") },
                 text = { Text("¿Esta seguro que quiere borrar esta tarea?") },
+
                 confirmButton = {
-                    Button(onClick = {
+                    Button(
+                        onClick = {
                         viewModel.deleteTask(tareaAEliminar!!)
-                        tareaAEliminar = null
-                    }) { Text("Sí") }
+                        tareaAEliminar = null },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Red, contentColor = Color.White)
+                    ) {
+                        Text("Sí")
+                    }
                 },
                 dismissButton = {
-                    Button(onClick = { tareaAEliminar = null }) { Text("No") }
+                    Button(
+                        onClick = { tareaAEliminar = null },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFffcf4d), contentColor = Color.Black)
+                    ) {
+                        Text("No")
+                    }
                 }
             )
         }

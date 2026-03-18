@@ -81,20 +81,22 @@ fun EditarTarea(
             )
         }
 
-        Button(
-            onClick = {
-                val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
-                endTime = sdf.format(Date())
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 15.dp, start = 8.dp, end = 8.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFFffcf4d),
-                contentColor = Color.Black
-            )
-        ) {
-            Text("Registrar hora de fin")
+        if (endTime.isEmpty()) {
+            Button(
+                onClick = {
+                    val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
+                    endTime = sdf.format(Date())
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 15.dp, start = 8.dp, end = 8.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFffcf4d),
+                    contentColor = Color.Black
+                )
+            ) {
+                Text("Registrar hora de fin")
+            }
         }
 
         Spacer(modifier = Modifier.height(10.dp))
