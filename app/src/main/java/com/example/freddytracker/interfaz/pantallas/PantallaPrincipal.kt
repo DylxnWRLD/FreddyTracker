@@ -2,6 +2,7 @@ package com.example.freddytracker.interfaz.pantallas
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
@@ -9,6 +10,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -24,7 +26,6 @@ fun PantallaPrincipal(
     navController: NavController,
     viewModel: TareaViewModel
 ) {
-
     var tareaAEliminar by remember { mutableStateOf<Tarea?>(null) }
 
     Column(
@@ -32,138 +33,203 @@ fun PantallaPrincipal(
             .fillMaxSize()
             .background(Color.White)
             .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
+        // Encabezado según el PDF
         Text(
             text = "Registro de \ntiempos",
-            fontSize = 26.sp,
+            fontSize = 30.sp,
             fontWeight = FontWeight.Bold,
             color = Color.Black,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(top = 55.dp)
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
         LazyColumn(
-            modifier = Modifier.weight(1f)
+            modifier = Modifier
+                .weight(1f)
+                .padding(top = 25.dp, start = 8.dp, end = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(18.dp)
         ) {
 
-            items(viewModel.tasks) { task ->
-
-                var tiempoActual by remember {
-                    mutableStateOf(viewModel.obtenerTiempoActual(task))
-                }
-
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                ) {
+            if(viewModel.tasks.isEmpty()){
+                item {
 
                     Column(
-                        modifier = Modifier.padding(16.dp)
+                        modifier = Modifier
+                            .fillParentMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
 
-                        // Actualiza el tiempo cada segundo
-                        LaunchedEffect(task.estado) {
-                            while (true) {
-                                if (task.estado == EstadoTarea.EN_PROGRESO) {
-                                    tiempoActual = viewModel.obtenerTiempoActual(task)
-                                }
-                                delay(1000)
+                        Text(
+                            text = "Presiona el botón de abajo \npara agregar una tarea",
+                            fontSize = 24.sp,
+                            color = Color.Gray,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(bottom = 45.dp)
+                        )
+                    }
+                }
+
+            } else {
+                items(viewModel.tasks) { task ->
+                    var tiempoActual by remember {
+                        mutableStateOf(viewModel.obtenerTiempoActual(task))
+                    }
+
+                    LaunchedEffect(task.estado) {
+                        while (true) {
+                            if (task.estado == EstadoTarea.EN_PROGRESO) {
+                                tiempoActual = viewModel.obtenerTiempoActual(task)
                             }
+                            delay(1000)
                         }
+                    }
 
-                        Text(task.name)
-                        Text(task.estado.name)
-                        Text(text = formatearTiempo(tiempoActual))
+                    // Card estilizada como en los "Recordatorios" del PDF
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFedebeb))
+                    ) {
 
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        when (task.estado) {
-
-                            EstadoTarea.PENDIENTE -> {
-                                Button(onClick = {
-                                    viewModel.iniciarTarea(task)
-                                }) {
-                                    Text("Iniciar")
-                                }
-                            }
-
-                            EstadoTarea.EN_PROGRESO -> {
-                                Button(onClick = {
-                                    viewModel.pausarTarea(task)
-                                }) {
-                                    Text("Pausar")
-                                }
-                            }
-
-                            EstadoTarea.PAUSADO -> {
-                                Button(onClick = {
-                                    viewModel.reanudarTarea(task)
-                                }) {
-                                    Text("Reanudar")
-                                }
-                            }
-
-                            else -> {}
-                        }
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Button(onClick = {
-                            tareaAEliminar = task
-                        }) {
-                            Text("Eliminar")
-                        }
-
-                        Button(
-                            onClick = {
-                                navController.navigate("editTask/${task.id}")
-                            }
+                        Column(modifier = Modifier
+                            .padding(16.dp)
                         ) {
-                            Text("Editar")
+                            Text(
+                                text = task.name,
+                                fontWeight = FontWeight.Bold,
+                                fontStyle = FontStyle.Italic,
+                                fontSize = 22.sp
+                            )
+
+                            Column (
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 8.dp),
+                                horizontalAlignment = Alignment.Start,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    text = "Hora de Inicio: ${task.startTime}",
+                                    fontSize = 17.sp
+                                )
+
+                                Text(
+                                    text = "Tiempo Empleado: ${formatearTiempo(tiempoActual)}",
+                                    fontSize = 16.sp
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                // Botones de control de estado
+                                when (task.estado) {
+                                    EstadoTarea.PENDIENTE -> {
+                                        Button(
+                                            onClick = { viewModel.iniciarTarea(task) },
+                                            colors = ButtonDefaults.buttonColors(
+                                                containerColor = Color(0xFF75de5d),
+                                                contentColor = Color.Black
+                                            )
+                                        ) {
+                                            Text("Iniciar")
+                                        }
+                                    }
+                                    EstadoTarea.EN_PROGRESO -> {
+                                        Button(
+                                            onClick = { viewModel.pausarTarea(task) },
+                                            colors = ButtonDefaults.buttonColors(
+                                                containerColor = Color(0xFFf2a435),
+                                                contentColor = Color.Black
+                                            )
+                                        ) {
+                                            Text("Pausar")
+                                        }
+                                    }
+                                    EstadoTarea.PAUSADO -> {
+                                        Button(
+                                            onClick = { viewModel.reanudarTarea(task) },
+                                            colors = ButtonDefaults.buttonColors(
+                                                containerColor = Color(0xFF75de5d),
+                                                contentColor = Color.Black
+                                            )
+                                        ) {
+                                            Text("Reanudar")
+                                        }
+                                    }
+                                    else -> {}
+                                }
+
+                                Button(
+                                    onClick = { navController.navigate("editTask/${task.id}") },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(0xFFffcf4d),
+                                        contentColor = Color.Black
+                                    )
+                                ) {
+                                    Text("Modificar")
+                                }
+                                Button(
+                                    onClick = { tareaAEliminar = task },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color.Red,
+                                        contentColor = Color.White
+                                    )
+                                ) {
+                                    Text("Eliminar")
+                                }
+                            }
                         }
                     }
                 }
             }
+
         }
 
+        // Botón inferior para agregar
+        Button(
+            onClick = { navController.navigate("addTask") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 25.dp, start = 8.dp, end = 8.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFFffcf4d),
+                contentColor = Color.Black
+            )
+        ) {
+            Text(
+                text = "Agregar Tarea",
+                fontSize = 19.sp
+            )
+        }
+
+        // Diálogo de alerta según el PDF
         if (tareaAEliminar != null) {
             AlertDialog(
                 onDismissRequest = { tareaAEliminar = null },
-                title = { Text("Confirmar eliminación") },
-                text = {
-                    Text("¿Seguro que quieres eliminar ${tareaAEliminar!!.name}?")
-                },
-                dismissButton = {
-                    Button(onClick = {
-                        tareaAEliminar = null
-                    }) {
-                        Text("Cancelar")
-                    }
-                },
+                title = { Text("Alerta") },
+                text = { Text("¿Esta seguro que quiere borrar esta tarea?") },
                 confirmButton = {
                     Button(onClick = {
                         viewModel.deleteTask(tareaAEliminar!!)
                         tareaAEliminar = null
                     }) {
-                        Text("Sí, eliminar")
+                        Text("Sí")
+                    }
+                },
+                dismissButton = {
+                    Button(
+                        onClick = { tareaAEliminar = null }
+                    ) {
+                        Text("No")
                     }
                 }
             )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(
-            onClick = {
-                navController.navigate("addTask")
-            }
-        ) {
-            Text("Agregar tarea")
         }
     }
 }
