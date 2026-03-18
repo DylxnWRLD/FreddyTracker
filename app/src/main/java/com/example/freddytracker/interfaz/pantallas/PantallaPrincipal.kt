@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -35,7 +37,6 @@ fun PantallaPrincipal(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Encabezado según el PDF
         Text(
             text = "Registro de \ntiempos",
             fontSize = 30.sp,
@@ -51,17 +52,13 @@ fun PantallaPrincipal(
                 .padding(top = 25.dp, start = 8.dp, end = 8.dp),
             verticalArrangement = Arrangement.spacedBy(18.dp)
         ) {
-
             if(viewModel.tasks.isEmpty()){
                 item {
-
                     Column(
-                        modifier = Modifier
-                            .fillParentMaxSize(),
+                        modifier = Modifier.fillParentMaxSize(),
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-
                         Text(
                             text = "Presiona el botón de abajo \npara agregar una tarea",
                             fontSize = 24.sp,
@@ -71,7 +68,6 @@ fun PantallaPrincipal(
                         )
                     }
                 }
-
             } else {
                 items(viewModel.tasks) { task ->
                     var tiempoActual by remember {
@@ -87,15 +83,11 @@ fun PantallaPrincipal(
                         }
                     }
 
-                    // Card estilizada como en los "Recordatorios" del PDF
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(containerColor = Color(0xFFedebeb))
                     ) {
-
-                        Column(modifier = Modifier
-                            .padding(16.dp)
-                        ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
                             Text(
                                 text = task.name,
                                 fontWeight = FontWeight.Bold,
@@ -104,111 +96,79 @@ fun PantallaPrincipal(
                             )
 
                             Column (
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 8.dp),
+                                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                                 horizontalAlignment = Alignment.Start,
                                 verticalArrangement = Arrangement.Center
                             ) {
-                                Text(
-                                    text = "Hora de Inicio: ${task.startTime}",
-                                    fontSize = 17.sp
-                                )
-
-                                Text(
-                                    text = "Tiempo Empleado: ${formatearTiempo(tiempoActual)}",
-                                    fontSize = 16.sp
-                                )
+                                Text(text = "Hora de Inicio: ${task.startTime}", fontSize = 17.sp)
+                                Text(text = "Tiempo Empleado: ${formatearTiempo(tiempoActual)}", fontSize = 16.sp)
                             }
 
                             Spacer(modifier = Modifier.height(12.dp))
 
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
+                                horizontalArrangement = Arrangement.End,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                // Botones de control de estado
+                                // Botones de control de estado con ICONOS
                                 when (task.estado) {
-                                    EstadoTarea.PENDIENTE -> {
-                                        Button(
-                                            onClick = { viewModel.iniciarTarea(task) },
-                                            colors = ButtonDefaults.buttonColors(
-                                                containerColor = Color(0xFF75de5d),
-                                                contentColor = Color.Black
-                                            )
+                                    EstadoTarea.PENDIENTE, EstadoTarea.PAUSADO -> {
+                                        FilledIconButton(
+                                            onClick = {
+                                                if (task.estado == EstadoTarea.PENDIENTE) viewModel.iniciarTarea(task)
+                                                else viewModel.reanudarTarea(task)
+                                            },
+                                            colors = IconButtonDefaults.filledIconButtonColors(containerColor = Color(0xFF75de5d))
                                         ) {
-                                            Text("Iniciar")
+                                            Icon(Icons.Filled.PlayArrow, contentDescription = "Iniciar", tint = Color.Black)
                                         }
                                     }
                                     EstadoTarea.EN_PROGRESO -> {
-                                        Button(
+                                        FilledIconButton(
                                             onClick = { viewModel.pausarTarea(task) },
-                                            colors = ButtonDefaults.buttonColors(
-                                                containerColor = Color(0xFFf2a435),
-                                                contentColor = Color.Black
-                                            )
+                                            colors = IconButtonDefaults.filledIconButtonColors(containerColor = Color(0xFFf2a435))
                                         ) {
-                                            Text("Pausar")
-                                        }
-                                    }
-                                    EstadoTarea.PAUSADO -> {
-                                        Button(
-                                            onClick = { viewModel.reanudarTarea(task) },
-                                            colors = ButtonDefaults.buttonColors(
-                                                containerColor = Color(0xFF75de5d),
-                                                contentColor = Color.Black
-                                            )
-                                        ) {
-                                            Text("Reanudar")
+                                            Icon(Icons.Filled.Pause, contentDescription = "Pausar", tint = Color.Black)
                                         }
                                     }
                                     else -> {}
                                 }
 
-                                Button(
+                                Spacer(modifier = Modifier.width(8.dp))
+
+                                FilledIconButton(
                                     onClick = { navController.navigate("editTask/${task.id}") },
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color(0xFFffcf4d),
-                                        contentColor = Color.Black
-                                    )
+                                    colors = IconButtonDefaults.filledIconButtonColors(containerColor = Color(0xFFffcf4d))
                                 ) {
-                                    Text("Modificar")
+                                    Icon(Icons.Filled.Edit, contentDescription = "Modificar", tint = Color.Black)
                                 }
-                                Button(
+
+                                Spacer(modifier = Modifier.width(8.dp))
+
+                                FilledIconButton(
                                     onClick = { tareaAEliminar = task },
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color.Red,
-                                        contentColor = Color.White
-                                    )
+                                    colors = IconButtonDefaults.filledIconButtonColors(containerColor = Color.Red)
                                 ) {
-                                    Text("Eliminar")
+                                    Icon(Icons.Filled.Delete, contentDescription = "Eliminar", tint = Color.White)
                                 }
                             }
                         }
                     }
                 }
             }
-
         }
 
-        // Botón inferior para agregar
         Button(
             onClick = { navController.navigate("addTask") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 25.dp, start = 8.dp, end = 8.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFFffcf4d),
-                contentColor = Color.Black
-            )
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFffcf4d), contentColor = Color.Black)
         ) {
-            Text(
-                text = "Agregar Tarea",
-                fontSize = 19.sp
-            )
+            Text(text = "Agregar Tarea", fontSize = 19.sp)
         }
 
-        // Diálogo de alerta según el PDF
         if (tareaAEliminar != null) {
             AlertDialog(
                 onDismissRequest = { tareaAEliminar = null },
@@ -218,16 +178,10 @@ fun PantallaPrincipal(
                     Button(onClick = {
                         viewModel.deleteTask(tareaAEliminar!!)
                         tareaAEliminar = null
-                    }) {
-                        Text("Sí")
-                    }
+                    }) { Text("Sí") }
                 },
                 dismissButton = {
-                    Button(
-                        onClick = { tareaAEliminar = null }
-                    ) {
-                        Text("No")
-                    }
+                    Button(onClick = { tareaAEliminar = null }) { Text("No") }
                 }
             )
         }
